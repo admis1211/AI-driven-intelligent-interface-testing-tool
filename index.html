@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ralph Loop - AI 智能接口测试工具</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Left Navigation -->
+        <nav class="left-nav">
+            <div class="nav-brand">
+                <div class="nav-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="nav-items">
+                <button class="nav-item active" data-view="chat" title="AI 对话">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span class="nav-label">对话</span>
+                </button>
+                
+                <button class="nav-item" data-view="documents" title="文档管理">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span class="nav-label">文档</span>
+                </button>
+                
+                <button class="nav-item" data-view="monitor" title="接口监控">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span class="nav-label">监控</span>
+                </button>
+                
+                <button class="nav-item" data-view="agent" title="AI Agent 测试">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                    <span class="nav-label">Agent</span>
+                </button>
+                
+                <button class="nav-item" data-view="defect" title="缺陷预测">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <span class="nav-label">缺陷</span>
+                </button>
+                
+                <button class="nav-item" data-view="testcase" title="测试用例">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                        <rect x="9" y="3" width="6" height="4" rx="1"/>
+                        <line x1="9" y1="12" x2="15" y2="12"/>
+                        <line x1="9" y1="16" x2="15" y2="16"/>
+                    </svg>
+                    <span class="nav-label">用例</span>
+                </button>
+                
+                <button class="nav-item" data-view="settings" title="设置">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 1v6m0 6v10"/>
+                    </svg>
+                    <span class="nav-label">设置</span>
+                </button>
+            </div>
+            
+            <div class="nav-footer">
+                <button id="apiKeyBtn" class="nav-item" title="API 配置">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <span class="nav-label">API</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-area">
+            <!-- Chat View -->
+            <div class="view-panel active" id="view-chat">
+                <header class="view-header">
+                    <div class="view-title">
+                        <h1>AI 对话</h1>
+                        <span class="view-badge">DeepSeek-V3.2</span>
+                    </div>
+                    <div class="view-actions">
+                        <button id="historySessionsBtn" class="btn btn-secondary btn-sm">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            历史会话
+                        </button>
+                        <button id="newChatBtn" class="btn btn-secondary btn-sm">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        新建对话
+                    </button>
+                </header>
+                
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message message-ai">
+                        <div class="message-avatar">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                        <div class="message-content">
+                            <p>你好！我是 <strong>Ralph Loop</strong>，你的 AI 接口测试助手。</p>
+                            <p>我可以帮助你：</p>
+                            <ul>
+                                <li>📄 解析接口文档 (Pdf, Word, PPT)</li>
+                                <li>🧪 生成接口测试用例</li>
+                                <li>🔍 实时监控接口状态</li>
+                                <li>💬 智能问答测试相关问题</li>
+                            </ul>
+                            <div class="message-time">今天</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-input-wrapper">
+                    <div class="input-container">
+                        <textarea id="messageInput" placeholder="描述你想测试的接口或提出问题..." rows="1"></textarea>
+                        <button id="sendBtn" class="send-btn" aria-label="发送">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="input-meta">
+                        <span><kbd>Enter</kbd> 发送</span>
+                        <span><kbd>Shift + Enter</kbd> 换行</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sessions Sidebar -->
+            <div id="sessionsSidebar" class="sessions-sidebar">
+                <div class="sessions-sidebar-header">
+                    <h3>历史会话</h3>
+                    <button id="closeSessionsBtn" class="sidebar-close">&times;</button>
+                </div>
+                <div id="sessionsList" class="sessions-list">
+                    <div class="empty-state">
+                        <p>暂无历史会话</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents View -->
+            <div class="view-panel" id="view-documents">
+                <header class="view-header">
+                    <div class="view-title">
+                        <h1>文档管理</h1>
+                        <span class="view-badge" id="docCount">0 个文档</span>
+                    </div>
+                </header>
+                
+                <div class="panel-content">
+                    <div class="upload-zone" id="uploadArea">
+                        <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.pptx,.ppt" hidden>
+                        <div class="upload-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                        </div>
+                        <p class="upload-text">拖拽文件到此处或点击上传</p>
+                        <span class="upload-hint">支持 Pdf, Word, PPT, TXT 格式</span>
+                    </div>
+                    
+                    <div class="doc-grid" id="documentList">
+                        <div class="empty-state">
+                            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                            <p>暂无文档</p>
+                            <span>上传接口文档开始使用</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monitor View -->
+            <div class="view-panel" id="view-monitor">
+                <header class="view-header">
+                    <div class="view-title">
+                        <h1>接口监控</h1>
+                    </div>
+                    <button id="addMonitorBtn" class="btn btn-primary btn-sm">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        添加监控
+                    </button>
+                </header>
+                
+                <div class="panel-content">
+                    <div class="monitor-grid" id="monitorList">
+                        <div class="empty-state">
+                            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            <p>暂无监控</p>
+                            <span>添加接口进行实时监控</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agent View -->
+            <div class="view-panel" id="view-agent">
+                <header class="view-header">
+                    <div class="view-title">
+                        <h1>AI Agent 测试</h1>
+                    </div>
+                </header>
+                
+                <div class="panel-content">
+                    <div class="agent-config-section">
+                        <div class="agent-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="agentEndpointUrl">接口地址</label>
+                                    <input type="text" id="agentEndpointUrl" placeholder="https://api.example.com/users">
+                                </div>
+                                <div class="form-group form-group-sm">
+                                    <label for="agentMethod">方法</label>
+                                    <select id="agentMethod">
+                                        <option value="GET">GET</option>
+                                        <option value="POST">POST</option>
+                                        <option value="PUT">PUT</option>
+                                        <option value="DELETE">DELETE</option>
+                                        <option value="PATCH">PATCH</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="agentExpectedStatus">预期状态码</label>
+                                    <input type="number" id="agentExpectedStatus" value="200" min="100" max="599">
+                                </div>
+                                <div class="form-group form-group-sm">
+                                    <label> </label>
+                                    <button id="runAgentTestBtn" class="btn btn-primary">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polygon points="5 3 19 12 5 21 5 3"/>
+                                        </svg>
+                                        开始测试
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="agent-progress hidden" id="agentProgress">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="agentProgressBar"></div>
+                            </div>
+                            <span class="progress-text" id="agentProgressText">正在测试...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="agent-results" id="agentResults">
+                        <div class="empty-state">
+                            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                            <p>AI Agent 测试</p>
+                            <span>配置接口并运行自动测试</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Defect View -->
+            <div class="view-panel" id="view-defect">
+                <header class="view-header">
+                    <div class="view-title">
+                        <h1>缺陷预测</h1>
+                    </div>
+                </header>
+                
+                <div class="panel-content">
+                    <div class="defect-config-section">
+                        <div class="defect-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>选择文档 (必选)</label>
+                                    <div class="doc-select-list" id="defectDocList">
+                                        <div class="empty-state small">
+                                            <p>暂无文档</p>
+                                            <span>请先上传接口文档</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="defectEndpointUrl">接口地址 (可选)</label>
+                                    <input type="text" id="defectEndpointUrl" placeholder="https://api.example.com/users">
+                                </div>
+                                <div class="form-group form-group-sm">
+                                    <label for="defectMethod">方法</label>
+                                    <select id="defectMethod">
+                                        <option value="GET">GET</option>
+                                        <option value="POST">POST</option>
+                                        <option value="PUT">PUT</option>
+                                        <option value="DELETE">DELETE</option>
+                                        <option value="PATCH">PATCH</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <button id="runDefectPredictBtn" class="btn btn-primary">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                        <line x1="12" y1="9" x2="12" y2="13"/>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                    </svg>
+                                    开始预测
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="defect-progress hidden" id="defectProgress">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="defectProgressBar"></div>
+                            </div>
+                            <span class="progress-text" id="defectProgressText">正在分析...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="defect-results" id="defectResults">
+                        <div class="empty-state">
+                            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                <line x1="12" y1="9" x2="12" y2="13"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                            <p>缺陷预测</p>
+                            <span>选择文档并开始AI分析</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div class="view-panel" id="view-settings">
+                <header class="view-header">
+                    <div class="view-title">
+                        <h1>设置</h1>
+                    </div>
+                </header>
+                
+                <div class="panel-content">
+                    <div class="settings-card">
+                        <h3>对话设置</h3>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">使用文档上下文</span>
+                                <span class="setting-desc">AI 回复时参考已选文档内容</span>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" id="useContext" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-card">
+                        <h3>数据管理</h3>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">清除所有文档</span>
+                                <span class="setting-desc">删除所有已上传的文档</span>
+                            </div>
+                            <button id="clearDocsBtn" class="btn btn-danger btn-sm">清除</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testcase View -->
+            <div class="view-panel" id="view-testcase">
+                <header class="view-header">
+                    <div class="view-title">
+                        <h1>测试用例生成</h1>
+                    </div>
+                </header>
+                
+                <div class="panel-content">
+                    <div class="agent-config-section">
+                        <div class="agent-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="testcaseEndpointUrl">接口地址</label>
+                                    <input type="text" id="testcaseEndpointUrl" placeholder="https://api.example.com/users">
+                                </div>
+                                <div class="form-group form-group-sm">
+                                    <label for="testcaseMethod">方法</label>
+                                    <select id="testcaseMethod">
+                                        <option value="GET">GET</option>
+                                        <option value="POST">POST</option>
+                                        <option value="PUT">PUT</option>
+                                        <option value="DELETE">DELETE</option>
+                                        <option value="PATCH">PATCH</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="testcaseCount">生成数量</label>
+                                    <input type="number" id="testcaseCount" value="10" min="1" max="50">
+                                </div>
+                                <div class="form-group">
+                                    <label>文档选择</label>
+                                    <div id="testcaseDocSelect" class="doc-select-list"></div>
+                                </div>
+                            </div>
+                            
+                            <button id="generateTestcaseBtn" class="btn btn-primary">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="5 3 19 12 5 21 5 3"/>
+                                </svg>
+                                生成测试用例
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="testcaseResults" class="testcase-results" style="display: none;">
+                        <div class="results-header">
+                            <h3>生成的测试用例 (<span id="testcaseCountDisplay">0</span>)</h3>
+                            <div class="export-buttons">
+                                <button id="exportJsonBtn" class="btn btn-secondary btn-sm">导出JSON</button>
+                                <button id="exportExcelBtn" class="btn btn-secondary btn-sm">导出Excel</button>
+                                <button id="exportPostmanBtn" class="btn btn-secondary btn-sm">导出Postman</button>
+                            </div>
+                        </div>
+                        <div id="testcaseList" class="testcase-list"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- API Modal -->
+    <div id="apiKeyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    API 配置
+                </h3>
+                <button class="modal-close" aria-label="关闭">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="apiKeyInput">API Key</label>
+                    <input type="password" id="apiKeyInput" placeholder="sk-...">
+                </div>
+                <div class="form-group">
+                    <label for="apiBaseInput">API 地址</label>
+                    <input type="text" id="apiBaseInput" placeholder="https://api.siliconflow.cn/v1">
+                </div>
+                <div class="form-group">
+                    <label for="modelNameInput">模型名称</label>
+                    <input type="text" id="modelNameInput" placeholder="deepseek-ai/DeepSeek-V3.2">
+                </div>
+                <div class="form-group">
+                    <label for="temperatureInput">Temperature</label>
+                    <input type="number" id="temperatureInput" min="0" max="2" step="0.1" value="0.7">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="loadApiConfig" class="btn btn-secondary">加载</button>
+                <button id="saveApiKey" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monitor Modal -->
+    <div id="monitorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    添加接口监控
+                </h3>
+                <button class="modal-close" id="monitorModalClose" aria-label="关闭">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="monitorName">接口名称</label>
+                    <input type="text" id="monitorName" placeholder="用户服务接口">
+                </div>
+                <div class="form-group">
+                    <label for="monitorUrl">接口地址</label>
+                    <input type="text" id="monitorUrl" placeholder="https://api.example.com/users">
+                </div>
+                <div class="form-group">
+                    <label for="monitorMethod">请求方法</label>
+                    <select id="monitorMethod">
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="monitorFrequency">监控间隔（秒）</label>
+                    <input type="number" id="monitorFrequency" min="10" value="60">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelMonitorBtn" class="btn btn-secondary">取消</button>
+                <button id="saveMonitorBtn" class="btn btn-primary">添加</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
